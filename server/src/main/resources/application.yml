@@ -1,0 +1,57 @@
+server:
+  port: 9096
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: zhuangxiu-server
+
+  # 默认激活的环境 profile；打包/部署时可用
+  #   --spring.profiles.active=prod-docker
+    # 覆盖为生产环境（加载 application-prod-docker.yml）
+  profiles:
+    active: test
+
+  # ===== 以下为不随环境变化的公共配置 =====
+  jpa:
+    hibernate:
+      ddl-auto: none           # 表结构完全交给 Flyway 管理
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  # 数据库版本管理（各环境均启用，自动建表）
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+
+  # 接口文档（Springdoc OpenAPI，兼容 Native）
+  springdoc:
+    api-docs:
+      enabled: true
+    swagger-ui:
+      enabled: true
+      path: /swagger-ui.html
+      operations-sorter: method
+
+# 业务配置（不随环境变化）
+app:
+  jwt:
+    # 生产请通过环境变量 APP_JWT_SECRET 注入（>=32 字节）
+    secret: ${APP_JWT_SECRET:zhuangxiu-default-secret-please-change-me-32b}
+    expiration-ms: 7200000        # access token 有效期 2h（按研发评审结论）
+  imgbb:
+    # 真实 API Key 不写入公共配置（避免凭据泄露）。
+    # - test 环境在 application-test.yml 中提供（该文件已被 .gitignore 忽略，不进仓库）
+    # - 生产环境通过环境变量 APP_IMGBB_API_KEY 注入
+    api-key: ${APP_IMGBB_API_KEY:}
+    upload-url: https://api.imgbb.com/1/upload
+
+logging:
+  level:
+    com.biliww.zhuangxiu: debug
+    org.hibernate.SQL: debug

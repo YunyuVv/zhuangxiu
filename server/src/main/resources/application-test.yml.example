@@ -1,0 +1,34 @@
+# ===================================================================
+# 测试环境配置模板（profile=test）
+# 用法：复制本文件为 application-test.yml，填入真实凭据后本地使用。
+# 注意：application-test.yml 含真实数据库/Redis 账号密码，已被 .gitignore 忽略，请勿提交。
+# ===================================================================
+server:
+  port: 9096
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  # 数据库（PostgreSQL）
+  datasource:
+    url: "jdbc:postgresql://<host>/<db>?sslmode=require"
+    username: "<db-user>"
+    password: "<db-password>"
+    driver-class-name: org.postgresql.Driver
+
+  # Redis（如为 Serverless 托管 Redis，请启用 TLS）
+  data:
+    redis:
+      host: "<redis-host>"
+      port: 6379
+      username: "default"
+      password: "<redis-password>"
+      ssl:
+        enabled: true
+
+# 图床（imgbb API Key）
+app:
+  imgbb:
+    api-key: "<imgbb-api-key>"

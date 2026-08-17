@@ -1,0 +1,22 @@
+# ============ 构建产物 ============
+server/target/
+web/.next/
+web/out/
+dist/
+node_modules/
+
+# ============ IDE ============
+.idea/
+*.iml
+.vscode/
+
+# ============ 本地工作记忆（含项目上下文，不提交） ============
+.workbuddy/
+
+# ============ 含真实凭据的测试环境配置 ============
+# 本地保留真实 application-test.yml 供运行；仓库使用 application-test.yml.example 占位模板
+server/src/main/resources/application-test.yml
+
+# ============ 日志 / 系统 ============
+*.log
+.DS_Store

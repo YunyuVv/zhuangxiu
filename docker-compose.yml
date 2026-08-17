@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: zx-postgres
+    environment:
+      POSTGRES_DB: zhuangxiu
+      POSTGRES_USER: zhuangxiu
+      POSTGRES_PASSWORD: zhuangxiu
+    ports:
+      - "5432:5432"
+    volumes:
+      - zx-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zhuangxiu"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    container_name: zx-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - zx-redis-data:/data
+
+volumes:
+  zx-pg-data:
+  zx-redis-data:

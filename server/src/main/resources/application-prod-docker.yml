@@ -1,0 +1,28 @@
+# ===================================================================
+# 生产环境配置（profile=prod-docker）
+# 用于 docker-compose / k8s 内部署，连接容器网络内的 PostgreSQL 与 Redis。
+# 通过环境变量注入连接信息，便于不同部署环境覆盖，不在仓库写死密码。
+#
+# 激活方式：
+#   mvn spring-boot:run -Dspring-boot.run.profiles=prod-docker
+#   或打包后：java -jar server.jar --spring.profiles.active=prod-docker
+# ===================================================================
+spring:
+  config:
+    activate:
+      on-profile: prod-docker
+
+  # 数据库（PostgreSQL，容器网络内主机名 postgres，可用环境变量覆盖）
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/zhuangxiu}
+    username: ${DB_USERNAME:zhuangxiu}
+    password: ${DB_PASSWORD:zhuangxiu}
+    driver-class-name: org.postgresql.Driver
+
+  # Redis（容器网络内主机名 redis，可用环境变量覆盖）
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
