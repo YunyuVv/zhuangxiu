@@ -79,6 +79,24 @@ export interface OverviewVO {
   categoryStats: { category: string; amount: number }[];
 }
 
+export interface DashboardVO {
+  totalBudget: number;
+  spent: number;
+  remaining: number;
+  overBudget: boolean;
+  completionRate: number;
+  categoryStats: { category: string; amount: number }[];
+  phaseProgress: { name: string; done: number; total: number; rate: number }[];
+  projects: {
+    id: number;
+    name: string;
+    status: string;
+    area?: number;
+    totalBudget: number;
+    completionRate: number;
+  }[];
+}
+
 export const CATEGORIES = ["设计费", "材料", "人工", "家具家电", "其他"];
 export const PAY_METHODS = ["微信", "支付宝", "银行卡", "现金", "其他"];
 export const PHASE_STATUSES = ["未开始", "进行中", "已完成"];

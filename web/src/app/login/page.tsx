@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { http } from "@/lib/api";
-import { setToken } from "@/lib/auth";
+import { setToken, setUser, isLoggedIn } from "@/lib/auth";
 import type { AuthResponse } from "@/lib/types";
 
 export default function LoginPage() {
@@ -13,6 +13,10 @@ export default function LoginPage() {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (isLoggedIn()) router.replace("/projects");
+  }, [router]);
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErr("");
@@ -20,6 +24,7 @@ export default function LoginPage() {
     try {
       const r = await http.post<AuthResponse>("/auth/login", { username, password });
       setToken(r.token);
+      setUser({ userId: r.userId, nickname: r.nickname });
       router.replace("/projects");
     } catch (e: any) {
       setErr(e?.message || "登录失败");
@@ -29,24 +34,41 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="container">
-      <h1 className="page-title">登录</h1>
-      <form onSubmit={submit}>
-        <label className="field-label">用户名</label>
-        <input className="input" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="用户名" />
-        <label className="field-label">密码</label>
-        <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="密码" />
-        {err && (
-          <p className="danger-text" style={{ marginBottom: 12 }}>
-            {err}
-          </p>
-        )}
-        <button className="btn" disabled={loading} type="submit">
-          {loading ? "登录中..." : "登录"}
-        </button>
-      </form>
-      <p className="muted" style={{ marginTop: 16, textAlign: "center" }}>
-        还没有账号？<a className="primary-text" href="/register">去注册</a>
+    <div className="auth">
+      <div className="auth-head">
+        <div className="auth-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 10.5 12 3l9 7.5" />
+            <path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5" />
+            <path d="M9.5 21v-6h5v6" />
+          </svg>
+        </div>
+        <h1 className="auth-title">欢迎回来</h1>
+        <p className="auth-sub">记录你的装修每一步</p>
+      </div>
+
+      <div className="auth-card">
+        <form onSubmit={submit}>
+          <label className="field-label">用户名</label>
+          <input className="input" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="用户名" />
+          <label className="field-label">密码</label>
+          <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="密码" />
+          {err && (
+            <p className="danger-text" style={{ margin: "4px 0 12px" }}>
+              {err}
+            </p>
+          )}
+          <button className="btn btn-block" disabled={loading} type="submit">
+            {loading ? "登录中..." : "登录"}
+          </button>
+        </form>
+      </div>
+
+      <p className="auth-foot">
+        还没有账号？
+        <a onClick={() => router.push("/register")} style={{ cursor: "pointer" }}>
+          去注册
+        </a>
       </p>
     </div>
   );

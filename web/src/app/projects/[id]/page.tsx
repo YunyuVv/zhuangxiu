@@ -63,12 +63,18 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="container">
-      <div className="row" style={{ marginBottom: 4 }}>
-        <h1 className="page-title" style={{ margin: 0 }}>{project?.name}</h1>
-        <span className="muted">{project?.status}</span>
+      <div className="appbar">
+        <span className="appbar-back" onClick={() => router.push("/projects")}>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </span>
+        <span className="appbar-title">{project?.name}</span>
+        <span className="appbar-spacer" />
+        <span className="tag">{project?.status}</span>
       </div>
-      <p className="muted" style={{ marginBottom: 12 }}>
-        总预算 ¥{project?.totalBudget}
+      <p className="muted num" style={{ margin: "-6px 0 12px 4px" }}>
+        总预算 ¥{(project?.totalBudget || 0) / 10000}万
       </p>
 
       <div className="tabs">
@@ -77,7 +83,7 @@ export default function ProjectDetailPage() {
         <div className={`tab ${tab === "overview" ? "active" : ""}`} onClick={() => setTab("overview")}>概览</div>
       </div>
 
-      <div style={{ marginTop: 12 }}>
+      <div>
         {tab === "timeline" && (
           <TimelineTab phases={phases} onSaved={() => { loadPhases(); loadOverview(); }} projectId={projectId} />
         )}
@@ -151,11 +157,11 @@ function PhaseCard({ phase, onSaved, projectId }: { phase: PhaseVO; onSaved: () 
         ))}
       </select>
       <label className="field-label">阶段预算（元）</label>
-      <input className="input" type="number" value={budget} onChange={(e) => setBudget(e.target.value)} />
+      <input className="input num" type="number" value={budget} onChange={(e) => setBudget(e.target.value)} />
       <label className="field-label">备注</label>
       <textarea className="textarea" value={note} onChange={(e) => setNote(e.target.value)} />
       <UploadImage projectId={projectId} refType="PHASE" refId={phase.id} label="上传阶段照片" />
-      <button className="btn btn-ghost" style={{ marginTop: 8 }} disabled={saving} onClick={save}>
+      <button className="btn btn-ghost btn-block" disabled={saving} onClick={save}>
         {saving ? "保存中..." : "保存阶段"}
       </button>
     </div>
@@ -225,7 +231,7 @@ function ExpenseTab({
           {CATEGORIES.map((c) => (<option key={c} value={c}>{c}</option>))}
         </select>
         <label className="field-label">金额（元）</label>
-        <input className="input" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0" />
+        <input className="input num" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0" />
         <label className="field-label">支付方式</label>
         <select className="input" value={payMethod} onChange={(e) => setPayMethod(e.target.value)}>
           {PAY_METHODS.map((m) => (<option key={m} value={m}>{m}</option>))}
@@ -239,7 +245,7 @@ function ExpenseTab({
         <input className="input" type="date" value={expenseDate} onChange={(e) => setExpenseDate(e.target.value)} />
         <label className="field-label">备注</label>
         <input className="input" value={note} onChange={(e) => setNote(e.target.value)} placeholder="选填" />
-        <button className="btn" disabled={adding} onClick={add}>
+        <button className="btn btn-block" disabled={adding} onClick={add}>
           {adding ? "保存中..." : "添加花费"}
         </button>
       </div>
@@ -251,14 +257,14 @@ function ExpenseTab({
           <div className="card" key={e.id}>
             <div className="row">
               <b>{e.category}</b>
-              <span>¥{e.amount}</span>
+              <span className="num">¥{e.amount}</span>
             </div>
-            <div className="muted" style={{ marginTop: 4 }}>
+            <div className="muted num" style={{ marginTop: 4 }}>
               {e.expenseDate} · {e.payMethod || "—"}
               {e.phaseId ? ` · ${phases.find((p) => p.id === e.phaseId)?.name || ""}` : ""}
             </div>
             {e.note && <div className="muted" style={{ marginTop: 4 }}>{e.note}</div>}
-            <button className="btn btn-danger" style={{ marginTop: 8 }} onClick={() => remove(e.id)}>删除</button>
+            <button className="btn btn-danger btn-block" style={{ marginTop: 10 }} onClick={() => remove(e.id)}>删除</button>
           </div>
         ))
       )}
@@ -269,43 +275,44 @@ function ExpenseTab({
 /* ---------------- 概览 ---------------- */
 function OverviewTab({ overview }: { overview: OverviewVO | null }) {
   if (!overview) return <p className="muted">暂无数据</p>;
+  const pct = Math.round(overview.completionRate * 100);
   return (
     <>
       <div className="card">
-        <div className="row"><span className="muted">总预算</span><b>¥{overview.totalBudget}</b></div>
-        <div className="row" style={{ marginTop: 6 }}><span className="muted">已花费</span><b>¥{overview.spent}</b></div>
-        <div className="row" style={{ marginTop: 6 }}>
+        <div className="row"><span className="muted">总预算</span><b className="num">¥{overview.totalBudget}</b></div>
+        <div className="row" style={{ marginTop: 8 }}><span className="muted">已花费</span><b className="num">¥{overview.spent}</b></div>
+        <div className="row" style={{ marginTop: 8 }}>
           <span className="muted">剩余</span>
-          <b className={overview.overBudget ? "danger-text" : "primary-text"}>
+          <b className={"num " + (overview.overBudget ? "danger-text" : "primary-text")}>
             ¥{overview.remaining} {overview.overBudget ? "（已超支）" : ""}
           </b>
         </div>
-        <div className="muted" style={{ marginTop: 6 }}>
-          完成度 {Math.round(overview.completionRate * 100)}%
+        <div className="muted" style={{ marginTop: 8 }}>
+          完成度 {pct}%
         </div>
       </div>
 
-      <h3 style={{ fontSize: 15 }}>各阶段预算 vs 实际</h3>
+      <p className="block-title" style={{ margin: "14px 4px 10px" }}>各阶段预算 vs 实际</p>
       {overview.phaseStats.map((s) => (
-        <div className="card" key={s.name} style={{ padding: 10 }}>
+        <div className="card" key={s.name} style={{ padding: 12 }}>
           <div className="row">
             <span>{s.name}</span>
-            <span className={s.over ? "danger-text" : ""}>
-              预算 ¥{s.budget} / 实际 ¥{s.actual} {s.over ? "超支" : ""}
+            <span className={"num " + (s.over ? "danger-text" : "")}>
+              ¥{s.budget} / ¥{s.actual} {s.over ? "超支" : ""}
             </span>
           </div>
         </div>
       ))}
 
-      <h3 style={{ fontSize: 15, marginTop: 12 }}>分类占比</h3>
+      <p className="block-title" style={{ margin: "14px 4px 10px" }}>分类占比</p>
       {overview.categoryStats.length === 0 ? (
         <p className="muted">暂无花费</p>
       ) : (
         overview.categoryStats.map((c) => (
-          <div className="card" key={c.category} style={{ padding: 10 }}>
+          <div className="card" key={c.category} style={{ padding: 12 }}>
             <div className="row">
               <span>{c.category}</span>
-              <b>¥{c.amount}</b>
+              <b className="num">¥{c.amount}</b>
             </div>
           </div>
         ))

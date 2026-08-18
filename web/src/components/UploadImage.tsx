@@ -113,7 +113,7 @@ export default function UploadImage({ projectId, refType, refId, onUploaded, lab
       <input ref={inputRef} type="file" accept="image/*" hidden onChange={onChange} />
       {preview && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={preview} alt="预览" style={{ width: "100%", marginTop: 8, borderRadius: 8 }} />
+        <img src={preview} alt="预览" style={{ width: "100%", marginTop: 8, borderRadius: "var(--r-sm)" }} />
       )}
     </div>
   );
