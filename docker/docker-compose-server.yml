@@ -1,0 +1,71 @@
+# 仅后端启动文件：前端托管在外部（Cloudflare Pages / 静态托管）+ 1Panel 反代模式
+# 适用场景：前端部署在 Cloudflare Pages 等，服务器只需运行后端 + 数据库 + Redis
+#           宿主机 1Panel 将后端域名（如 api.yourdomain.com）反代到 127.0.0.1:9096
+# 执行方式：cd zhuangxiu && docker compose -f docker/docker-compose-server.yml up -d
+
+services:
+  zhuangxiu-postgres:
+    image: postgres:16
+    container_name: zhuangxiu-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-zhuangxiu}
+      POSTGRES_USER: ${DB_USERNAME:-zhuangxiu}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-zhuangxiu}
+    volumes:
+      - zx-pg-data:/var/lib/postgresql/data
+    networks:
+      - zhuangxiu-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-zhuangxiu}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  zhuangxiu-redis:
+    image: redis:7
+    container_name: zhuangxiu-redis
+    restart: unless-stopped
+    volumes:
+      - zx-redis-data:/data
+    networks:
+      - zhuangxiu-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  zhuangxiu-server:
+    image: ${ZHUANGXIU_SERVER_IMAGE:-ghcr.io/idea-flow/zhuangxiu-server-native:latest}
+    container_name: zhuangxiu-server
+    restart: unless-stopped
+    depends_on:
+      zhuangxiu-postgres:
+        condition: service_healthy
+      zhuangxiu-redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod-docker}
+      DB_URL: jdbc:postgresql://zhuangxiu-postgres:5432/${DB_NAME:-zhuangxiu}
+      DB_USERNAME: ${DB_USERNAME:-zhuangxiu}
+      DB_PASSWORD: ${DB_PASSWORD:-zhuangxiu}
+      REDIS_HOST: zhuangxiu-redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      APP_JWT_SECRET: ${APP_JWT_SECRET:-zhuangxiu-default-secret-please-change-me-32b}
+      TZ: ${TZ:-Asia/Shanghai}
+    # 对外暴露 9096 端口，供 1Panel / 反向代理使用
+    ports:
+      - "${SERVER_PORT:-9096}:9096"
+    networks:
+      - zhuangxiu-network
+
+networks:
+  zhuangxiu-network:
+    name: zhuangxiu-network
+
+volumes:
+  zx-pg-data:
+  zx-redis-data:

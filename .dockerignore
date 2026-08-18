@@ -1,0 +1,23 @@
+# Git 元数据与 IDE 文件不进入镜像构建上下文。
+.git
+.idea
+.DS_Store
+.workbuddy
+
+# Maven / Native 本地产物体积较大，构建时应始终重新生成。
+**/target
+
+# 前端 node_modules 与构建缓存不进入上下文，pnpm install 在容器内重新执行。
+web/node_modules
+web/.next
+
+# 文档、本地数据库数据、本地部署文件不参与镜像构建。
+docs
+zx-pg-data
+zx-redis-data
+.env
+.env.example
+
+# 与镜像构建无关的目录与说明文件。
+miniprogram
+项目说明.md

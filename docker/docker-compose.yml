@@ -1,0 +1,99 @@
+# 全局启动文件：纯 Docker 管理模式
+# 架构：nginx（80 对外）→ zhuangxiu-web（3000）/ zhuangxiu-server（9096, prod-docker）
+#                         → zhuangxiu-postgres（5432）+ zhuangxiu-redis（6379）
+# web 与 server 不对外暴露端口，所有流量经 nginx 统一入口分发。
+# 执行方式：cd zhuangxiu && docker compose -f docker/docker-compose.yml up -d
+
+services:
+  zhuangxiu-postgres:
+    image: postgres:16
+    container_name: zhuangxiu-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-zhuangxiu}
+      POSTGRES_USER: ${DB_USERNAME:-zhuangxiu}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-zhuangxiu}
+    volumes:
+      - zx-pg-data:/var/lib/postgresql/data
+    networks:
+      - zhuangxiu-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-zhuangxiu}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  zhuangxiu-redis:
+    image: redis:7
+    container_name: zhuangxiu-redis
+    restart: unless-stopped
+    volumes:
+      - zx-redis-data:/data
+    networks:
+      - zhuangxiu-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  zhuangxiu-server:
+    image: ${ZHUANGXIU_SERVER_IMAGE:-ghcr.io/idea-flow/zhuangxiu-server-native:latest}
+    container_name: zhuangxiu-server
+    restart: unless-stopped
+    depends_on:
+      zhuangxiu-postgres:
+        condition: service_healthy
+      zhuangxiu-redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod-docker}
+      # 使用容器网络内主机名连接数据库；Spring Boot 启动时由 Flyway 自动建表
+      DB_URL: jdbc:postgresql://zhuangxiu-postgres:5432/${DB_NAME:-zhuangxiu}
+      DB_USERNAME: ${DB_USERNAME:-zhuangxiu}
+      DB_PASSWORD: ${DB_PASSWORD:-zhuangxiu}
+      REDIS_HOST: zhuangxiu-redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      # JWT 签名密钥，必须 >=32 字节；正式环境务必通过 .env 覆盖
+      APP_JWT_SECRET: ${APP_JWT_SECRET:-zhuangxiu-default-secret-please-change-me-32b}
+      TZ: ${TZ:-Asia/Shanghai}
+    # 不对外暴露端口，只在内部网络中被 nginx 访问
+    networks:
+      - zhuangxiu-network
+
+  zhuangxiu-web:
+    image: ${ZHUANGXIU_WEB_IMAGE:-ghcr.io/idea-flow/zhuangxiu-web:latest}
+    container_name: zhuangxiu-web
+    restart: unless-stopped
+    depends_on:
+      - zhuangxiu-server
+    environment:
+      # 前端为纯客户端渲染，浏览器通过 nginx 同域转发 /api 到后端，无需单独配置后端地址
+      TZ: ${TZ:-Asia/Shanghai}
+    # 不对外暴露端口，只在内部网络中被 nginx 访问
+    networks:
+      - zhuangxiu-network
+
+  zhuangxiu-nginx:
+    image: nginx:alpine
+    container_name: zhuangxiu-nginx
+    restart: unless-stopped
+    depends_on:
+      - zhuangxiu-web
+      - zhuangxiu-server
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - zhuangxiu-network
+
+networks:
+  zhuangxiu-network:
+    name: zhuangxiu-network
+
+volumes:
+  zx-pg-data:
+  zx-redis-data:
