@@ -1,6 +1,7 @@
 package com.biliww.zhuangxiu.controller;
 
 import com.biliww.zhuangxiu.common.ApiResult;
+import com.biliww.zhuangxiu.dto.DashboardVO;
 import com.biliww.zhuangxiu.dto.OverviewVO;
 import com.biliww.zhuangxiu.security.SecurityUtil;
 import com.biliww.zhuangxiu.service.OverviewService;
@@ -16,6 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class OverviewController {
 
     private final OverviewService overviewService;
+
+    @GetMapping("/overview")
+    public ApiResult<DashboardVO> dashboard() {
+        return ApiResult.success(overviewService.allOverview(SecurityUtil.getCurrentUserId()));
+    }
 
     @GetMapping("/{id}/overview")
     public ApiResult<OverviewVO> overview(@PathVariable Long id) {
