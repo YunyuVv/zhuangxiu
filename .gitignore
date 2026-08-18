@@ -4,6 +4,7 @@ web/.next/
 web/out/
 dist/
 node_modules/
+*.tsbuildinfo
 
 # ============ IDE ============
 .idea/
