@@ -15,6 +15,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.List;
 
 /**
@@ -35,10 +37,16 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
-                    "/api/auth/**", "/api/attachment/upload-key"
+                    "/api/auth/**", "/api/attachment/upload-key",
+                    "/api/guides/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
+            // 未认证 / token 失效：统一返回 401（而非 Spring 默认的 403），
+            // 让前端拦截器能识别并清 token + 跳登录，避免页面卡在“加载失败”。
+            .exceptionHandling(e -> e.authenticationEntryPoint(
+                (req, res, ex) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
+            ))
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

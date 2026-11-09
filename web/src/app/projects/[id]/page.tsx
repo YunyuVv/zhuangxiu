@@ -9,6 +9,7 @@ import {
   PHASE_STATUSES,
   type ExpenseVO,
   type OverviewVO,
+  type PhaseTaskVO,
   type PhaseVO,
   type ProjectVO,
 } from "@/lib/types";
@@ -113,25 +114,136 @@ function TimelineTab({
   onSaved: () => void;
   projectId: number;
 }) {
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState("");
+
+  async function movePhase(idx: number, dir: -1 | 1) {
+    const j = idx + dir;
+    if (j < 0 || j >= phases.length) return;
+    const a = phases[idx];
+    const b = phases[j];
+    try {
+      await Promise.all([
+        http.put(`/phases/${a.id}`, { name: a.name, sortOrder: b.sortOrder }),
+        http.put(`/phases/${b.id}`, { name: b.name, sortOrder: a.sortOrder }),
+      ]);
+      onSaved();
+    } catch (e: any) {
+      alert(e?.message || "排序失败");
+    }
+  }
+
+  async function removePhase(id: number) {
+    if (!confirm("删除该阶段会一并删除其下所有花销与子项，确认删除？")) return;
+    try {
+      await http.del(`/phases/${id}`);
+      onSaved();
+    } catch (e: any) {
+      alert(e?.message || "删除失败");
+    }
+  }
+
+  async function submitPhase() {
+    const name = newName.trim();
+    if (!name) {
+      alert("请输入阶段名称");
+      return;
+    }
+    try {
+      await http.post(`/projects/${projectId}/phases`, { name });
+      setNewName("");
+      setAdding(false);
+      onSaved();
+    } catch (e: any) {
+      alert(e?.message || "添加失败");
+    }
+  }
+
   return (
     <>
-      {phases.map((ph) => (
-        <PhaseCard key={ph.id} phase={ph} onSaved={onSaved} projectId={projectId} />
+      {phases.map((ph, idx) => (
+        <PhaseCard
+          key={ph.id}
+          phase={ph}
+          index={idx}
+          total={phases.length}
+          onMove={(dir) => movePhase(idx, dir)}
+          onDelete={() => removePhase(ph.id)}
+          onSaved={onSaved}
+          projectId={projectId}
+        />
       ))}
+
+      {adding ? (
+        <div className="card">
+          <label className="field-label">阶段名称</label>
+          <input
+            className="input"
+            autoFocus
+            value={newName}
+            placeholder="如：换窗 / 中央空调"
+            onChange={(e) => setNewName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submitPhase()}
+          />
+          <div className="row" style={{ gap: 8, marginTop: 8 }}>
+            <button className="btn btn-block" onClick={submitPhase}>添加</button>
+            <button className="btn btn-ghost" onClick={() => setAdding(false)}>取消</button>
+          </div>
+        </div>
+      ) : (
+        <button className="btn btn-ghost btn-block" style={{ marginBottom: 12 }} onClick={() => { setNewName(""); setAdding(true); }}>
+          + 添加阶段
+        </button>
+      )}
     </>
   );
 }
 
-function PhaseCard({ phase, onSaved, projectId }: { phase: PhaseVO; onSaved: () => void; projectId: number }) {
+function PhaseCard({
+  phase,
+  index,
+  total,
+  onMove,
+  onDelete,
+  onSaved,
+  projectId,
+}: {
+  phase: PhaseVO;
+  index: number;
+  total: number;
+  onMove: (dir: -1 | 1) => void;
+  onDelete: () => void;
+  onSaved: () => void;
+  projectId: number;
+}) {
+  const [name, setName] = useState(phase.name);
   const [status, setStatus] = useState(phase.status);
   const [budget, setBudget] = useState(String(phase.budget));
   const [note, setNote] = useState(phase.note || "");
   const [saving, setSaving] = useState(false);
 
+  // 阶段子项
+  const [tasks, setTasks] = useState<PhaseTaskVO[]>([]);
+  const [taskName, setTaskName] = useState("");
+  const [loadingTasks, setLoadingTasks] = useState(false);
+  const [addingTask, setAddingTask] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    setLoadingTasks(true);
+    http.get<PhaseTaskVO[]>(`/phases/${phase.id}/tasks`)
+      .then((r) => alive && setTasks(r))
+      .catch(() => {})
+      .finally(() => alive && setLoadingTasks(false));
+    return () => { alive = false; };
+  }, [phase.id]);
+
   async function save() {
     setSaving(true);
     try {
       await http.put(`/phases/${phase.id}`, {
+        name: name.trim() || phase.name,
+        sortOrder: phase.sortOrder,
         status,
         budget: budget ? Number(budget) : 0,
         note: note || undefined,
@@ -144,24 +256,90 @@ function PhaseCard({ phase, onSaved, projectId }: { phase: PhaseVO; onSaved: () 
     }
   }
 
+  async function toggleTask(t: PhaseTaskVO) {
+    try {
+      const updated = await http.put<PhaseTaskVO>(`/tasks/${t.id}`, { done: !t.done });
+      setTasks((ts) => ts.map((x) => (x.id === updated.id ? updated : x)));
+    } catch (e: any) {
+      alert(e?.message || "更新失败");
+    }
+  }
+
+  async function addTask() {
+    const n = taskName.trim();
+    if (!n) return;
+    setAddingTask(true);
+    try {
+      const created = await http.post<PhaseTaskVO>(`/phases/${phase.id}/tasks`, { name: n });
+      setTasks((ts) => [...ts, created]);
+      setTaskName("");
+    } catch (e: any) {
+      alert(e?.message || "添加失败");
+    } finally {
+      setAddingTask(false);
+    }
+  }
+
+  async function removeTask(id: number) {
+    try {
+      await http.del(`/tasks/${id}`);
+      setTasks((ts) => ts.filter((x) => x.id !== id));
+    } catch (e: any) {
+      alert(e?.message || "删除失败");
+    }
+  }
+
   return (
-    <div className="card">
-      <div className="row">
-        <b>{phase.name}</b>
-        <span className="muted">第 {phase.sortOrder + 1} 步</span>
+    <div className="card ph-card">
+      <div className="ph-head">
+        <input className="input ph-name" value={name} onChange={(e) => setName(e.target.value)} />
+        <div className="ph-ops">
+          <button className="ph-op" disabled={index === 0} onClick={() => onMove(-1)} title="上移">↑</button>
+          <button className="ph-op" disabled={index === total - 1} onClick={() => onMove(1)} title="下移">↓</button>
+          <button className="ph-op ph-op-del" onClick={onDelete} title="删除阶段">×</button>
+        </div>
       </div>
-      <label className="field-label" style={{ marginTop: 8 }}>状态</label>
+      <div className="muted" style={{ marginTop: 2 }}>第 {phase.sortOrder + 1} 步</div>
+
+      <label className="field-label" style={{ marginTop: 10 }}>状态</label>
       <select className="input" value={status} onChange={(e) => setStatus(e.target.value)}>
-        {PHASE_STATUSES.map((s) => (
-          <option key={s} value={s}>{s}</option>
-        ))}
+        {PHASE_STATUSES.map((s) => (<option key={s} value={s}>{s}</option>))}
       </select>
       <label className="field-label">阶段预算（元）</label>
       <input className="input num" type="number" value={budget} onChange={(e) => setBudget(e.target.value)} />
       <label className="field-label">备注</label>
       <textarea className="textarea" value={note} onChange={(e) => setNote(e.target.value)} />
+
+      {/* 阶段子项清单 */}
+      <div className="tasks">
+        <div className="tasks-head">阶段子项 <span className="muted">（待办 / 检查清单）</span></div>
+        {loadingTasks ? (
+          <p className="muted" style={{ margin: "6px 0" }}>加载中...</p>
+        ) : tasks.length === 0 ? (
+          <p className="muted" style={{ margin: "6px 0" }}>暂无子项</p>
+        ) : (
+          tasks.map((t) => (
+            <div className={"task" + (t.done ? " done" : "")} key={t.id}>
+              <span className="task-check" onClick={() => toggleTask(t)}>{t.done ? "✓" : ""}</span>
+              <span className="task-name" onClick={() => toggleTask(t)}>{t.name}</span>
+              <span className="task-del" onClick={() => removeTask(t.id)}>×</span>
+            </div>
+          ))
+        )}
+        <div className="task-add">
+          <input
+            className="input"
+            placeholder="添加子项，如：盯打压、验防水"
+            value={taskName}
+            onChange={(e) => setTaskName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addTask()}
+          />
+          <button className="btn btn-ghost" disabled={addingTask} onClick={addTask}>+</button>
+        </div>
+      </div>
+
       <UploadImage projectId={projectId} refType="PHASE" refId={phase.id} label="上传阶段照片" />
-      <button className="btn btn-ghost btn-block" disabled={saving} onClick={save}>
+      <button className="btn btn-ghost btn-block" disabled={saving} onClick={save} style={{ marginTop: 10 }}>
         {saving ? "保存中..." : "保存阶段"}
       </button>
     </div>
@@ -180,6 +358,7 @@ function ExpenseTab({
   expenses: ExpenseVO[];
   onChanged: () => void;
 }) {
+  const [name, setName] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [amount, setAmount] = useState("");
   const [payMethod, setPayMethod] = useState(PAY_METHODS[0]);
@@ -189,6 +368,10 @@ function ExpenseTab({
   const [adding, setAdding] = useState(false);
 
   async function add() {
+    if (!name.trim()) {
+      alert("请填写物品 / 器材名称");
+      return;
+    }
     if (!amount) {
       alert("请填写金额");
       return;
@@ -196,6 +379,7 @@ function ExpenseTab({
     setAdding(true);
     try {
       await http.post(`/projects/${projectId}/expenses`, {
+        name: name.trim(),
         category,
         amount: Number(amount),
         payMethod,
@@ -203,6 +387,7 @@ function ExpenseTab({
         phaseId: phaseId ? Number(phaseId) : undefined,
         note: note || undefined,
       });
+      setName("");
       setAmount("");
       setNote("");
       onChanged();
@@ -226,6 +411,8 @@ function ExpenseTab({
   return (
     <>
       <div className="card">
+        <label className="field-label">物品 / 器材名称</label>
+        <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="如：东鹏瓷砖 800×800" />
         <label className="field-label">分类</label>
         <select className="input" value={category} onChange={(e) => setCategory(e.target.value)}>
           {CATEGORIES.map((c) => (<option key={c} value={c}>{c}</option>))}
@@ -256,12 +443,13 @@ function ExpenseTab({
         expenses.map((e) => (
           <div className="card" key={e.id}>
             <div className="row">
-              <b>{e.category}</b>
+              <b>{e.name || e.category}</b>
               <span className="num">¥{e.amount}</span>
             </div>
             <div className="muted num" style={{ marginTop: 4 }}>
               {e.expenseDate} · {e.payMethod || "—"}
               {e.phaseId ? ` · ${phases.find((p) => p.id === e.phaseId)?.name || ""}` : ""}
+              {e.category ? ` · ${e.category}` : ""}
             </div>
             {e.note && <div className="muted" style={{ marginTop: 4 }}>{e.note}</div>}
             <button className="btn btn-danger btn-block" style={{ marginTop: 10 }} onClick={() => remove(e.id)}>删除</button>

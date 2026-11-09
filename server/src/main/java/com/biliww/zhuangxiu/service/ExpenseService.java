@@ -29,6 +29,7 @@ public class ExpenseService {
         Expense e = new Expense();
         e.setProjectId(projectId);
         e.setPhaseId(req.getPhaseId());
+        e.setName(req.getName());
         e.setCategory(req.getCategory());
         e.setAmount(req.getAmount());
         e.setPayMethod(req.getPayMethod());
@@ -42,6 +43,7 @@ public class ExpenseService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "花销记录不存在"));
         ensureOwned(userId, e.getProjectId());
         if (req.getPhaseId() != null) e.setPhaseId(req.getPhaseId());
+        if (req.getName() != null) e.setName(req.getName());
         if (req.getCategory() != null) e.setCategory(req.getCategory());
         if (req.getAmount() != null) e.setAmount(req.getAmount());
         if (req.getPayMethod() != null) e.setPayMethod(req.getPayMethod());
@@ -88,6 +90,7 @@ public class ExpenseService {
         ExpenseVO v = new ExpenseVO();
         v.setId(e.getId());
         v.setPhaseId(e.getPhaseId());
+        v.setName(e.getName());
         v.setCategory(e.getCategory());
         v.setAmount(e.getAmount());
         v.setPayMethod(e.getPayMethod());

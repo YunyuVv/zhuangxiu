@@ -10,7 +10,7 @@ public final class Constants {
     private Constants() {
     }
 
-    /** 标准装修工序（固定 8 阶段，P0）。 */
+    /** 默认阶段模板（新建项目时初始化；用户可增/删/改/排序，非强制固定）。 */
     public static final List<String> STANDARD_PHASES = List.of(
             "拆改", "水电", "泥瓦", "木工", "油漆", "安装", "软装", "验收");
 

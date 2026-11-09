@@ -70,6 +70,11 @@ export default function LoginPage() {
           去注册
         </a>
       </p>
+      <p className="auth-foot" style={{ marginTop: 10 }}>
+        <a onClick={() => router.push("/guide")} style={{ cursor: "pointer" }}>
+          先看看装修怎么装 ›
+        </a>
+      </p>
     </div>
   );
 }

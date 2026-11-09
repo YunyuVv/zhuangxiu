@@ -45,10 +45,22 @@ export interface PhaseVO {
 export interface ExpenseVO {
   id: number;
   phaseId?: number;
+  name?: string;
   category: string;
   amount: number;
   payMethod?: string;
   expenseDate: string;
+  note?: string;
+  createdAt?: string;
+}
+
+// 阶段子项（某阶段内自定义待办/检查项，无金额）
+export interface PhaseTaskVO {
+  id: number;
+  phaseId: number;
+  name: string;
+  done: boolean;
+  sortOrder: number;
   note?: string;
   createdAt?: string;
 }
@@ -100,3 +112,20 @@ export interface DashboardVO {
 export const CATEGORIES = ["设计费", "材料", "人工", "家具家电", "其他"];
 export const PAY_METHODS = ["微信", "支付宝", "银行卡", "现金", "其他"];
 export const PHASE_STATUSES = ["未开始", "进行中", "已完成"];
+
+// 装修指南（公开内容，与后端 GuideVO 对齐）
+export interface GuideDetailItem {
+  section: string;
+  content: string;
+  sortOrder: number;
+}
+
+export interface GuideVO {
+  stageKey: string;
+  title: string;
+  summary?: string;
+  duration?: string;
+  costRatio: number;
+  sortOrder: number;
+  details?: GuideDetailItem[];
+}

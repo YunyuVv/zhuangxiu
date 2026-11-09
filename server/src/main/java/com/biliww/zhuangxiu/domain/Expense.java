@@ -33,6 +33,10 @@ public class Expense {
     @Column(name = "phase_id")
     private Long phaseId;
 
+    /** 物品/器材名称：装修公司让买的器材/主材名（采购清单核心字段）。 */
+    @Column(length = 100)
+    private String name;
+
     @Column(nullable = false, length = 30)
     private String category;
 

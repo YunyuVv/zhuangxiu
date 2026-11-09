@@ -804,6 +804,403 @@ select.input {
 }
 
 /* ============================================================
+   装修指南（公开 · SSR）
+   ============================================================ */
+.guide-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.16s ease;
+}
+.guide-entry:active {
+  transform: scale(0.992);
+  box-shadow: var(--sh-2);
+}
+.ge-ico {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.ge-ico svg {
+  width: 21px;
+  height: 21px;
+}
+.ge-text {
+  flex: 1;
+  min-width: 0;
+}
+.ge-title {
+  font-size: 15px;
+  font-weight: 650;
+}
+.ge-sub {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-top: 2px;
+}
+.ge-go {
+  font-size: 20px;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.guide-hero {
+  padding: 8px 4px 18px;
+}
+.gh-title {
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  margin: 0 0 8px;
+}
+.gh-sub {
+  font-size: 14px;
+  color: var(--ink-2);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* 阶段列表卡 */
+.guide-list {
+  display: flex;
+  flex-direction: column;
+}
+.guide-stage {
+  display: flex;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 15px 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--sh-1);
+  transition: transform 0.12s ease, box-shadow 0.16s ease;
+}
+.guide-stage:active {
+  transform: scale(0.992);
+  box-shadow: var(--sh-2);
+}
+.gs-index {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.5px;
+}
+.gs-body {
+  flex: 1;
+  min-width: 0;
+}
+.gs-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.gs-name {
+  font-size: 16px;
+  font-weight: 650;
+}
+.gs-sum {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin: 6px 0 0;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.gs-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+.gs-cost {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.gs-go {
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* 底部引导卡 */
+.guide-cta {
+  margin-top: 18px;
+  text-align: center;
+  background: linear-gradient(150deg, var(--primary), #2c9a6c);
+  border: none;
+  color: #fff;
+}
+.guide-cta .gc-title {
+  font-size: 16px;
+  font-weight: 650;
+  margin: 0 0 4px;
+}
+.guide-cta .gc-sub {
+  font-size: 13px;
+  opacity: 0.9;
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+.guide-cta .btn {
+  background: #fff;
+  color: var(--primary);
+  box-shadow: none;
+}
+.guide-cta .btn:active {
+  background: color-mix(in srgb, #fff 90%, #000 6%);
+  color: var(--primary-strong);
+}
+
+/* 攻略详情 hero */
+.guide-detail-hero {
+  background: linear-gradient(150deg, var(--primary), #2c9a6c);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  color: #fff;
+  box-shadow: 0 14px 34px rgba(31, 122, 82, 0.28);
+  margin-bottom: 16px;
+}
+.gdh-index {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.85;
+  letter-spacing: 0.5px;
+}
+.gdh-name {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 4px 0 12px;
+}
+.gdh-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.gdh-meta .tag {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+.gdh-meta .tag.tag-warn {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.gdh-sum {
+  font-size: 13.5px;
+  line-height: 1.65;
+  margin: 0;
+  opacity: 0.95;
+}
+
+/* 攻略明细块 */
+.guide-sections {
+  display: flex;
+  flex-direction: column;
+}
+.gsection {
+  margin-bottom: 10px;
+}
+.gs-sec-label {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--primary);
+  background: var(--primary-soft);
+  padding: 4px 11px;
+  border-radius: var(--pill);
+  margin-bottom: 10px;
+}
+.gs-sec-content {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* 上一步 / 下一步 */
+.guide-nav {
+  display: flex;
+  gap: 10px;
+  margin: 16px 0;
+}
+.gn-item {
+  flex: 1;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 12px 14px;
+  background: var(--surface);
+  box-shadow: var(--sh-1);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  transition: transform 0.12s ease;
+}
+.gn-item:active {
+  transform: scale(0.99);
+}
+.gn-right {
+  text-align: right;
+  align-items: flex-end;
+}
+.gn-dir {
+  font-size: 12px;
+  color: var(--muted);
+}
+.gn-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ============================================================
+   阶段卡片 / 阶段子项（采购与检查清单）
+   ============================================================ */
+.ph-card {
+  margin-bottom: 14px;
+}
+.ph-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ph-name {
+  flex: 1;
+  font-weight: 650;
+  font-size: 16px;
+  padding: 8px 10px;
+}
+.ph-ops {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.ph-op {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--pill);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.ph-op:active {
+  background: var(--line);
+}
+.ph-op:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.ph-op-del {
+  color: var(--danger);
+  border-color: var(--danger-soft);
+}
+.ph-op-del:active {
+  background: var(--danger-soft);
+}
+
+/* 阶段子项清单 */
+.tasks {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line-strong);
+}
+.tasks-head {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 8px;
+}
+.task {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.task:last-of-type {
+  border-bottom: none;
+}
+.task-check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--pill);
+  border: 2px solid var(--line-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.task.done .task-check {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.task-name {
+  flex: 1;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.task.done .task-name {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.task-del {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 18px;
+  cursor: pointer;
+}
+.task-del:active {
+  color: var(--danger);
+}
+.task-add {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.task-add .input {
+  flex: 1;
+}
+.task-add .btn-ghost {
+  flex-shrink: 0;
+  width: 44px;
+  padding: 0;
+  font-size: 18px;
+}
+
+/* ============================================================
    进场动画
    ============================================================ */
 .reveal {

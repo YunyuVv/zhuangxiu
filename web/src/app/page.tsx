@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { http } from "@/lib/api";
 import { isLoggedIn, getUser } from "@/lib/auth";
 import type { DashboardVO } from "@/lib/types";
@@ -180,6 +181,20 @@ export default function Home() {
               <div className="sl">{overBudget ? "已超支" : "剩余预算"}</div>
             </div>
           </div>
+
+          <Link href="/guide" className="card guide-entry reveal">
+            <div className="ge-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z" />
+                <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5A1.5 1.5 0 0 0 20 18.5z" />
+              </svg>
+            </div>
+            <div className="ge-text">
+              <div className="ge-title">装修攻略</div>
+              <div className="ge-sub">装修分几步走？先看拆改到入住的 8 个阶段</div>
+            </div>
+            <span className="ge-go">›</span>
+          </Link>
 
           <div className="block reveal">
             <p className="block-title">

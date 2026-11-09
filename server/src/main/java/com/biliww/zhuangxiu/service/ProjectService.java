@@ -9,7 +9,9 @@ import com.biliww.zhuangxiu.domain.Project;
 import com.biliww.zhuangxiu.dto.ProjectCreateRequest;
 import com.biliww.zhuangxiu.dto.ProjectUpdateRequest;
 import com.biliww.zhuangxiu.dto.ProjectVO;
+import com.biliww.zhuangxiu.repository.ExpenseRepository;
 import com.biliww.zhuangxiu.repository.PhaseRepository;
+import com.biliww.zhuangxiu.repository.PhaseTaskRepository;
 import com.biliww.zhuangxiu.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +29,8 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final PhaseRepository phaseRepository;
+    private final ExpenseRepository expenseRepository;
+    private final PhaseTaskRepository phaseTaskRepository;
 
     @Transactional
     public ProjectVO create(Long userId, ProjectCreateRequest req) {
@@ -85,6 +89,9 @@ public class ProjectService {
     @Transactional
     public void delete(Long userId, Long projectId) {
         getOwned(userId, projectId);
+        // 级联清理，避免外键约束冲突（expenses.phase_id、phase_tasks.phase_id/project_id）
+        expenseRepository.deleteByProjectId(projectId);
+        phaseTaskRepository.deleteByProjectId(projectId);
         phaseRepository.findByProjectIdOrderBySortOrderAsc(projectId)
                 .forEach(ph -> phaseRepository.deleteById(ph.getId()));
         projectRepository.deleteById(projectId);

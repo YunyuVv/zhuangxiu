@@ -16,4 +16,10 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     List<Expense> findByProjectIdIn(List<Long> projectIds);
 
     Page<Expense> findByProjectIdAndPhaseId(Long projectId, Long phaseId, Pageable pageable);
+
+    List<Expense> findByPhaseId(Long phaseId);
+
+    void deleteByProjectId(Long projectId);
+
+    void deleteByPhaseId(Long phaseId);
 }

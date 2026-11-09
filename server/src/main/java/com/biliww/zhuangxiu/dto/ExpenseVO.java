@@ -13,6 +13,7 @@ public class ExpenseVO {
 
     private Long id;
     private Long phaseId;
+    private String name;
     private String category;
     private BigDecimal amount;
     private String payMethod;

@@ -15,6 +15,11 @@ public class ExpenseCreateRequest {
 
     private Long phaseId;
 
+    /** 物品/器材名称（采购清单必填）。 */
+    @NotBlank
+    @jakarta.validation.constraints.Size(max = 100)
+    private String name;
+
     @NotBlank
     @jakarta.validation.constraints.Size(max = 30)
     private String category;

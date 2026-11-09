@@ -10,6 +10,8 @@ import java.time.LocalDate;
 @RegisterReflectionForBinding
 public class PhaseUpdateRequest {
 
+    private String name;
+    private Integer sortOrder;
     private String status;
     private LocalDate startDate;
     private LocalDate endDate;

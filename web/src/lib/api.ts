@@ -14,7 +14,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    // 401/403 均视为未认证（后端对失效 token 可能返回 403），清 token 并跳登录，
+    // 避免首页等页面卡在“加载失败”。
+    if (err.response?.status === 401 || err.response?.status === 403) {
       clearToken();
       if (typeof window !== "undefined") window.location.href = "/login";
     }
