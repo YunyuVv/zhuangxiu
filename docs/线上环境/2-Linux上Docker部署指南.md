@@ -70,7 +70,8 @@ vim .env      # 按下面说明修改
 | `SERVER_PORT` | 仅 `docker-compose-server.yml` 模式对外暴露的端口 | `9096` |
 | `ZHUANGXIU_WEB_IMAGE` | 前端镜像 | `ghcr.io/idea-flow/zhuangxiu-web:latest` |
 | `NGINX_HTTP_PORT` | nginx 对外端口 | `80` |
-| `NGINX_SERVER_NAME` | 域名（本地用 `localhost`） | `localhost` |
+| `FRONTEND_DOMAIN` | 前端页面域名（仅域名，不带协议/路径） | `localhost` |
+| `BACKEND_DOMAIN` | 后端 API 域名，与前端域名不同 | `api.localhost` |
 | `TZ` | 时区 | `Asia/Shanghai` |
 
 生成强 JWT 密钥：

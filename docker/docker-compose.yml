@@ -83,10 +83,16 @@ services:
     depends_on:
       - zhuangxiu-web
       - zhuangxiu-server
+    environment:
+      FRONTEND_DOMAIN: ${FRONTEND_DOMAIN:-localhost}
+      BACKEND_DOMAIN: ${BACKEND_DOMAIN:-api.localhost}
+      # 官方镜像启动时将模板写成主配置；只替换域名，保留 $host 等 Nginx 变量。
+      NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx
+      NGINX_ENVSUBST_FILTER: '^(FRONTEND_DOMAIN|BACKEND_DOMAIN)'
     ports:
       - "${NGINX_HTTP_PORT:-80}:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx.conf:/etc/nginx/templates/nginx.conf.template:ro
     networks:
       - zhuangxiu-network
 
