@@ -18,6 +18,11 @@ zx-redis-data
 .env
 .env.example
 
+# 本地私密配置与 API 域名证书不进入镜像构建上下文。
+server/src/main/resources/application-test.yml
+docker/.env
+docker/nginx/certs
+
 # 与镜像构建无关的目录与说明文件。
 miniprogram
 项目说明.md

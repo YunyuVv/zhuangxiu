@@ -18,6 +18,10 @@ node_modules/
 # 本地保留真实 application-test.yml 供运行；仓库使用 application-test.yml.example 占位模板
 server/src/main/resources/application-test.yml
 
+# 部署凭据和 API 域名证书只保留在服务器/本机。
+docker/.env
+docker/nginx/certs/
+
 # ============ 日志 / 系统 ============
 *.log
 .DS_Store

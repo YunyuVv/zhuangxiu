@@ -126,33 +126,44 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-            <!-- Native 构建：将 native:compile 绑定到 package 阶段。
-                 说明：spring-boot-starter-parent 的 native profile 默认只绑 add-reachability-metadata，
-                 不会自动执行 compile，因此 `mvn -Pnative package` 原本只出 jar。
-                 显式绑定后，`mvn -Pnative clean package` 即可一步产出原生可执行 target/zhuangxiu-server。 -->
-            <plugin>
-                <groupId>org.graalvm.buildtools</groupId>
-                <artifactId>native-maven-plugin</artifactId>
-                <configuration>
-                    <!-- 将全部 JDK 安全服务提供者（含 SunEC，用于 PostgreSQL/Redis/imgbb 的 TLS 证书校验）
-                         打进 Native 镜像，否则连 Neon 等启用 SSL 的云库会因证书不被信任而失败。
-                         注意：GraalVM 25 选项名为 EnableAllSecurityServices（旧版叫 IncludeAllSecurityServices）。 -->
-                    <buildArgs>
-                        <buildArg>-H:+EnableAllSecurityServices</buildArg>
-                    </buildArgs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>build-native</id>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- 仅显式启用 native 时编译原生程序，避免 JVM 的 package 要求 GraalVM。 -->
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <!-- Native 构建：将 native:compile 绑定到 package 阶段。
+                         说明：spring-boot-starter-parent 的 native profile 默认只绑 add-reachability-metadata，
+                         不会自动执行 compile，因此 `mvn -Pnative package` 原本只出 jar。
+                         显式绑定后，`mvn -Pnative clean package` 即可一步产出原生可执行 target/zhuangxiu-server。 -->
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <configuration>
+                            <!-- 将全部 JDK 安全服务提供者（含 SunEC，用于 PostgreSQL/Redis/imgbb 的 TLS 证书校验）
+                                 打进 Native 镜像，否则连 Neon 等启用 SSL 的云库会因证书不被信任而失败。
+                                 注意：GraalVM 25 选项名为 EnableAllSecurityServices（旧版叫 IncludeAllSecurityServices）。 -->
+                            <buildArgs>
+                                <buildArg>-H:+EnableAllSecurityServices</buildArg>
+                            </buildArgs>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>build-native</id>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <!--
       Native 构建说明：

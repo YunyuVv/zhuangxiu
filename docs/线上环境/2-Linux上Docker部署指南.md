@@ -2,6 +2,8 @@
 
 本文给出在 Linux 服务器（CentOS / Ubuntu / Debian 等）上，用 Docker 把「装修记录网站」整套跑起来的具体操作步骤。部署架构背景见同目录 [1-部署架构与方式介绍.md](./1-部署架构与方式介绍.md)。
 
+> 2026-11-09 核查补充：Nginx 域名分流和 JVM/Native profile 已在本地修正，指南 SSR 容器地址、图床变量映射及实际镜像运行仍需处理。首次部署请先按 [首次部署核对与执行清单](3-首次部署核对与执行清单.md) 检查；本文原有步骤不能作为现版本已可直接部署的证明。当前指南含 SSR，外部前端托管也需要支持对应运行能力，不能直接等同于纯静态托管。
+
 > 镜像由 GitHub Actions 自动构建并推送到 `ghcr.io`。如果你尚未拥有自己的镜像，请先按「第 0 步」让 CI 为你构建，或直接使用公开示例镜像（仅适合演示，密钥需自行覆盖）。
 
 ## 第 0 步（可选）：让 GitHub Actions 为你构建镜像
@@ -97,6 +99,8 @@ docker compose -f docker-compose.yml logs -f zhuangxiu-server   # 看后端日�
 浏览器访问 `http://<服务器IP>:80`（若 `NGINX_HTTP_PORT` 改过则用对应端口）。应能看到首页；用账号登录后进入概览。
 
 ## 第 5 步：启动（形态 B：前端外托管 + 后端）
+
+小程序需要独立 API 域名时，参见 [Spring Boot 后端独立域名配置](4-SpringBoot后端独立域名配置.md)：全栈直接在现有 Nginx 新增 API server，通过容器网络访问后端。
 
 若前端托管在 Cloudflare Pages 等，服务器只跑后端：
 
